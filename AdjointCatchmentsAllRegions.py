@@ -34,7 +34,7 @@ for catch, drain in zip(catchment_zips, drainageline_zips):
             zip_ref.extractall(drain_dir)
 def get_upstream(tree, search_id):
     q = queue.Queue()
-    q.put((search_id,)) #how to make this a tuple?
+    q.put((search_id,))
     upstream = []
     i = 0
 
