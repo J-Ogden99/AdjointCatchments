@@ -39,7 +39,7 @@ def make_tree(df: pd.DataFrame, order: int = 0) -> dict:
     return tree
 
 
-def make_tree_up(df: pd.DataFrame, order: int = 0) -> dict:
+def make_tree_up(df: pd.DataFrame, order: int = 0, stream_id_col: str = "HydroID", next_down_id_col: str = "NextDownID", order_col: str = "order_") -> dict:
     """
     Makes a dictionary depicting a tree where each segment id as a key has a tuple containing the ids of its parent segments, or the ones that
     have it as the next down id. Either does this for every id in the tree, or only includes ids of a given stream order
@@ -52,18 +52,22 @@ def make_tree_up(df: pd.DataFrame, order: int = 0) -> dict:
             - an order column
         order: number of stream order to limit it to. If zero, will make tree for all segments,
                otherwise only contains ids that match the given stream order.
+        stream_id_col: the name of the column that contains the unique ids for the streams
+        next_down_id_col: the name of the column that contains the unique id of the next down stream, the one that the
+                          stream for that row feeds into.
+        order_col: name of the column that contains the stream order
 
     Returns: dictionary where for each key, a tuple of all values that have that key as their next down id is assigned.
              if order==0, values will be either length 0 or 2, otherwise will be 0 or one as only a maximum of
              one parent will be of the given order.
     """
     if order == 0:
-        out = df[["HydroID", "NextDownID", "order_"]].set_index("NextDownID")
+        out = df[[stream_id_col, next_down_id_col, order_col]].set_index(next_down_id_col)
         out.drop(-1, inplace=True)
         tree = {}
-        for hydroid in df["HydroID"]:
+        for hydroid in df[stream_id_col]:
             if hydroid in out.index:
-                rows = out.loc[hydroid]["HydroID"]
+                rows = out.loc[hydroid][stream_id_col]
                 if not isinstance(rows, np.floating):
                     tree[hydroid] = tuple(rows.tolist())
                 else:
@@ -71,13 +75,13 @@ def make_tree_up(df: pd.DataFrame, order: int = 0) -> dict:
             else:
                 tree[hydroid] = ()
         return tree
-    out = df[df["order_"] == order][["HydroID", "NextDownID", "order_"]].set_index("NextDownID")
-    tree = {hydroid: ((int(out.loc[hydroid]["HydroID"]),) if hydroid in out.index else ()) for hydroid in
-            df[df['order_'] == order]["HydroID"]}
+    out = df[df[order_col] == order][[stream_id_col, next_down_id_col, order_col]].set_index(next_down_id_col)
+    tree = {hydroid: ((int(out.loc[hydroid][stream_id_col]),) if hydroid in out.index else ()) for hydroid in
+            df[df[order_col] == order][stream_id_col]}
     return tree
 
 
-def make_tree_down(df: pd.DataFrame, order: int = 0) -> dict:
+def make_tree_down(df: pd.DataFrame, order: int = 0, stream_id_col: str = "HydroID", next_down_id_col: str = "NextDownID", order_col: str = "order_") -> dict:
     """
     Performs the simpler task of pairing segment ids as keys with their next down ids as values.
     Args:
@@ -87,17 +91,21 @@ def make_tree_down(df: pd.DataFrame, order: int = 0) -> dict:
             - an order column
         order: number of stream order to limit it to. If zero, will make tree for all segments,
                otherwise only contains ids that match the given stream order.
+        stream_id_col: the name of the column that contains the unique ids for the streams
+        next_down_id_col: the name of the column that contains the unique id of the next down stream, the one that the
+                          stream for that row feeds into.
+        order_col: name of the column that contains the stream order
 
     Returns: dictionary where for each key its next down id from the dataframe is given as a value.
     """
     if order == 0:
-        tree = dict(zip(df['HydroID'], df['NextDownID']))
+        tree = dict(zip(df[stream_id_col], df[next_down_id_col]))
         return tree
-    out = chmt[["HydroID", "NextDownID", "order_"]][chmt["order_"] == order]
-    out_2 = out[out["NextDownID"].isin(out["HydroID"])]
-    out.loc[~out["HydroID"].isin(out_2["HydroID"]), "NextDownID"] = -1
+    out = chmt[[stream_id_col, next_down_id_col, order_col]][chmt[order_col] == order]
+    out_2 = out[out[next_down_id_col].isin(out[stream_id_col])]
+    out.loc[~out[stream_id_col].isin(out_2[stream_id_col]), next_down_id_col] = -1
     # tree = dict(zip(out.loc[out['NextDownID'] != -1, 'HydroID'], out.loc[out['NextDownID'] != -1, 'NextDownID']))
-    tree = dict(zip(out['HydroID'], out['NextDownID']))
+    tree = dict(zip(out[stream_id_col], out[next_down_id_col]))
     return tree
 
 
