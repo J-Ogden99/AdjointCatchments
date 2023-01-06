@@ -73,7 +73,7 @@ def make_tree_up(df: pd.DataFrame, order: int = 0, stream_id_col: str = "COMID",
              one parent will be of the given order.
     """
     if order == 0:
-        out = df[[stream_id_col, next_down_id_col, order_col]].set_index(next_down_id_col)
+        out = df[[stream_id_col, next_down_id_col]].set_index(next_down_id_col)
         out.drop(-1, inplace=True)
         tree = {}
         for hydroid in df[stream_id_col]:
@@ -235,7 +235,10 @@ def create_adjoint_dict(network_dir, out_file: str = None, stream_id_col: str = 
 
     """
     network_df = gpd.read_file(glob(os.path.join(network_dir, "*.shp"))[0])
-    for col in [stream_id_col, next_down_id_col, order_col]:
+    columns_to_search = [stream_id_col, next_down_id_col]
+    if order_filter != 0:
+        columns_to_search.append(order_col)
+    for col in columns_to_search:
         if col not in network_df.columns:
             print(f"Column {col} not present")
             return {}
@@ -274,7 +277,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument('networkdir', type=str,
-                        help='Required. Path to directory containing .shp file.')
+                        help='Required. Path to directory containing .shp file. This directory must only contain the '
+                             'target shapefile')
     parser.add_argument('--outfile', metavar='-O', type=str,
                         help='Path to output file if writing to .json is desired. Default: None')
     parser.add_argument('--streamidcol', metavar='-SIDCol', type=str, default="COMID",
@@ -282,7 +286,8 @@ if __name__ == "__main__":
     parser.add_argument('--nextdownidcol', metavar='-NDIDCol', type=str, default="NextDownID",
                         help='Name of Next Down ID Column. Default: "NextDownID"')
     parser.add_argument('--ordercol', metavar='-OrdCol', type=str, default="order_",
-                        help='Name of Column containing stream orders. Default: "order_"')
+                        help='Name of Column containing stream orders. Need not be provided if orderfilter is 0,'
+                             'otherwise required if the tool is to be able to filter by order. Default: "order_"')
     parser.add_argument('--traceup', metavar='-U', type=bool, default=True,
                         help='If true, traces up, else down. Default: True')
     parser.add_argument('--orderfilter', metavar='-Ord', type=int, default=0,
