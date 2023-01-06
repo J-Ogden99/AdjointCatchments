@@ -8,8 +8,8 @@ import contextily as cx
 import matplotlib.pyplot as plt
 start_time = time.time()
 
-parse_dir = 'NGA Delineation'
-out_dir = 'NGA Delineation/OutputJSONs'
+parse_dir = 'NGADelineation'
+out_dir = 'NGADelineation/OutputJSONs'
 rivid_field = "streamID"
 next_down_field = 'DSLINKNO'
 catchments = glob(os.path.join(parse_dir, '*/*basins*.gpkg'))
@@ -17,6 +17,7 @@ drainagelines = glob(os.path.join(parse_dir, '*/*streamnet*.shp'))
 
 catch = gpd.read_file(catchments[0])
 drain = gpd.read_file((drainagelines[0]))
+print(drain.columns)
 catch_stream = catch.merge(drain.drop('geometry', axis=1), left_on='streamID', right_on='LINKNO').drop('LINKNO', axis=1)
 catch_stream.to_file(os.path.join(parse_dir, 'Japan_comb/Japan_comb.shp'))
 plot_group = catch_stream

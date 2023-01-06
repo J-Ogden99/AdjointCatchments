@@ -9,7 +9,7 @@ import time
 import pandas as pd
 import AdjoinUpdown as adj
 
-def create_adjoint_dict(catch_dir, drain_dir):
+def create_adjoint_dict(catch_dir, drain_dir, out_file):
     out_file = os.path.join(out_dir, f'{os.path.basename(catch_dir).split("-")[0]}-upstream-dict.json')
     if not os.path.exists(out_file):
         chmt = gpd.read_file(glob(os.path.join(catch_dir, "*.shp"))[0])
@@ -75,4 +75,10 @@ if __name__ == "__main__":
                 zip_ref.extractall(drain_dir)
 
     for catch_dir, drain_dir in zip(catch_dirs, drain_dirs):
-        create_adjoint_dict(catch_dir, drain_dir)
+        out_file = os.path.join(out_dir, f'{os.path.basename(catch_dir).split("-")[0]}-upstream-dict.json')
+        # try:
+        if not os.path.exists(out_file):
+            adj.create_adjoint_dict(drain_dir, out_file, "COMID")
+        # except:
+        #     print(f"WARNING: {os.path.basename(out_file)} not written")
+        #     continue

@@ -4,13 +4,13 @@ import geopandas as gpd
 import contextily as cx
 import matplotlib.pyplot as plt
 
-f = open('/Users/joshogden/PycharmProjects/AdjointCatchments/NGA Delineation/OutputJSONs/Japan-nga-upstream-dict.json')
+f = open('/NGADelineation/OutputJSONs/Japan-nga-upstream-dict.json')
 
 upstream_dict = json.load(f)
 
-japan_comb_adjoin = gpd.read_file('NGA Delineation/Japan_comb/Japan_comb.shp')
+japan_comb_adjoin = gpd.read_file('NGADelineation/Japan_comb/Japan_comb.shp')
 print(japan_comb_adjoin['streamID'])
-japan_drainage = gpd.read_file('NGA Delineation/Japan/TDX_streamnet_4020034510_01.shp')
+japan_drainage = gpd.read_file('NGADelineation/Japan/TDX_streamnet_4020034510_01.shp')
 searchid = input('input search id: ')
 while searchid != "stop":
     print(upstream_dict[searchid])
