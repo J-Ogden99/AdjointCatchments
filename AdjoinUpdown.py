@@ -4,7 +4,6 @@ import os
 import queue
 from collections.abc import Iterable
 from glob import glob
-
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -289,7 +288,7 @@ if __name__ == "__main__":
                         help='Name of Column containing stream orders. Need not be provided if orderfilter is 0,'
                              'otherwise required if the tool is to be able to filter by order. Default: "order_"')
     parser.add_argument('--traceup', metavar='-U', type=bool, default=True,
-                        help='If true, traces up, else down. Default: True')
+                        help='If true, traces up, else down. Accepts: True or False. Default: True')
     parser.add_argument('--orderfilter', metavar='-Ord', type=int, default=0,
                         help='Number of stream order to limit to. If 0 runs on all streams, else only includes '
                              'specified stream order. Default: 0.')

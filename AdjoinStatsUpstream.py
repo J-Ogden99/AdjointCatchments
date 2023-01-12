@@ -14,9 +14,10 @@ if not os.path.exists(all_regions_out):
         f = open(js)
         cur = json.load(f)
         all_regions.update(cur)
-    with open(all_regions_out) as f:
-        json.dumps(all_regions, f)
+    with open(all_regions_out, 'w') as f:
+        json.dump(all_regions, f)
 else:
     f = open(all_regions_out)
     all_regions = json.load(f)
 print(all_regions['13082861'])
+

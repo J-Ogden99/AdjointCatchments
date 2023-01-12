@@ -17,6 +17,7 @@ drainagelines = glob(os.path.join(parse_dir, '*/*streamnet*.shp'))
 
 catch = gpd.read_file(catchments[0])
 drain = gpd.read_file((drainagelines[0]))
+order_col = drain['strmOrder']
 print(drain.columns)
 catch_stream = catch.merge(drain.drop('geometry', axis=1), left_on='streamID', right_on='LINKNO').drop('LINKNO', axis=1)
 catch_stream.to_file(os.path.join(parse_dir, 'Japan_comb/Japan_comb.shp'))
