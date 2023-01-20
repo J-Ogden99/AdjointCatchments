@@ -208,7 +208,7 @@ def join_order_geoglows(catch, drain):
     return comb_adjoin
 
 
-def create_adjoint_dict(network_dir, out_file: str = None, stream_id_col: str = "COMID",
+def create_adjoint_dict(network_shp, out_file: str = None, stream_id_col: str = "COMID",
                         next_down_id_col: str = "NextDownID", order_col: str = "order_", trace_up: bool = True,
                         order_filter: int = 0):
     """
@@ -218,7 +218,7 @@ def create_adjoint_dict(network_dir, out_file: str = None, stream_id_col: str = 
     order. If filtered by stream order, the dictionary will only contain ids of the given stream order, with the
     upstream or downstream ids for the other streams in the chain that share that stream order.
     Args:
-        network_dir: path to directory that contains .shp file and all necessary indexing files (.shx, etc.). This file
+        network_shp: path to  .shp file that contains the stream network. This file
                      must contain attributes for a unique id and a next down id, and if filtering by order number is
                      specified, it must also contain a column with stream order values.
         out_file: a path to an output file to write the dictionary as a .json, if desired.
@@ -233,7 +233,7 @@ def create_adjoint_dict(network_dir, out_file: str = None, stream_id_col: str = 
     Returns:
 
     """
-    network_df = gpd.read_file(glob(os.path.join(network_dir, "*.shp"))[0])
+    network_df = gpd.read_file(network_shp)
     columns_to_search = [stream_id_col, next_down_id_col]
     if order_filter != 0:
         columns_to_search.append(order_col)
@@ -245,7 +245,10 @@ def create_adjoint_dict(network_dir, out_file: str = None, stream_id_col: str = 
         tree = make_tree_up(network_df, order_filter, stream_id_col, next_down_id_col, order_col)
     else:
         tree = make_tree_down(network_df, order_filter, stream_id_col, next_down_id_col, order_col)
-    upstream_lists_dict = {str(hydro_id): trace_tree(tree, hydro_id) for hydro_id in network_df[stream_id_col]}
+    if order_filter != 0:
+        upstream_lists_dict = {str(hydro_id): trace_tree(tree, hydro_id) for hydro_id in network_df[network_df[order_col] == order_filter][stream_id_col]}
+    else:
+        upstream_lists_dict = {str(hydro_id): trace_tree(tree, hydro_id) for hydro_id in network_df[stream_id_col]}
     if out_file is not None:
         if not os.path.exists(out_file):
             with open(out_file, "w") as f:
@@ -275,7 +278,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument('networkdir', type=str,
+    parser.add_argument('networkshp', type=str,
                         help='Required. Path to directory containing .shp file. This directory must only contain the '
                              'target shapefile')
     parser.add_argument('--outfile', metavar='-O', type=str,
@@ -294,7 +297,7 @@ if __name__ == "__main__":
                              'specified stream order. Default: 0.')
     args = parser.parse_args()
     print(vars(args))
-    network_dir = args.networkdir
+    network_shp = args.networkshp
     if 'outfile' in args:
         out_file = args.outfile
     if 'streamidcol' in args:
@@ -308,7 +311,7 @@ if __name__ == "__main__":
     if 'orderfilter' in args:
         order_filter = args.orderfilter
 
-    print(create_adjoint_dict(network_dir, out_file, stream_id_col, next_down_id_col, order_col, trace_up, order_filter))
+    print(create_adjoint_dict(network_shp, out_file, stream_id_col, next_down_id_col, order_col, trace_up, order_filter))
     # catch = gpd.read_file(glob(os.path.join("scratch_data/japan_comb_sorted", "*.shp"))[0])
     # out_file = os.path.join(sys.argv[1], "tree_3.json") #path to directory in which jsons must be written should be given as argument when running script
     # for i in range(5):
