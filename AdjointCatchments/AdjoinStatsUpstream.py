@@ -4,7 +4,7 @@ from glob import glob
 import json
 import AdjoinUpdown as adj
 
-jsons_dir = "RegionalAdjointCatchmentCOMID_JSONs"
+jsons_dir = "../RegionalAdjointCatchmentCOMID_JSONs"
 jsons = glob(os.path.join(jsons_dir, "*.json"))
 all_regions_out = os.path.join(jsons_dir, 'all-regions-upstream_dict.json')
 all_regions = {}

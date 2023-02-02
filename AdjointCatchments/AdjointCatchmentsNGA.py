@@ -8,8 +8,8 @@ import contextily as cx
 import matplotlib.pyplot as plt
 start_time = time.time()
 
-parse_dir = 'NGADelineation'
-out_dir = 'NGADelineation/OutputJSONs'
+parse_dir = '../NGADelineation'
+out_dir = '../NGADelineation/OutputJSONs'
 rivid_field = "streamID"
 next_down_field = 'DSLINKNO'
 catchments = glob(os.path.join(parse_dir, '*/*basins*.gpkg'))
